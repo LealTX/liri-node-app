@@ -3,14 +3,13 @@ require("dotenv").config();
 const keys = require('./keys.js');
 const Spotify = require('node-spotify-api');
 const request = require('request');
-
-const spotify = new Spotify({
-    id: process.env.SPOTIFY_ID,
-    secret: process.env.SPOTIFY_SECRET,
-});
+const moment = require('moment');
+const fs = require('fs');
 
 
-const userCommand = process.argv[2];
+var spotify = new Spotify(keys.spotify);
+
+let userCommand = process.argv[2];
 let secondCommand = process.argv[3];
 
 for (i = 4; i < process.argv.length; i++) {
@@ -56,15 +55,20 @@ function spotifyFind() {
 }
 
 function conertThis() {
-    const concertSearch = `https://rest.bandsintown.com/artists/${secondCommand}/events?app_id=codingbootcamp`
+    const searchConcert = `https://rest.bandsintown.com/artists/${secondCommand}/events?app_id=codingbootcamp`
 
-    request(concertSearch, function (err, response, data) {
-        if (!err && response.statusCode === 200) {
+    request(searchConcert, function (err, response, data) {
+        if (!err && response.statusCode == 200) {
+            const obj = JSON.parse(data);
+            const formatDate = moment(obj[0].datetime).format('LLL')
 
-            console.log(JSON.parse(data));
+
+            console.log(`Venue Name: ${obj[0].venue.name}`);
+            console.log(`Venue City: ${obj[0].venue.city}`);
+            console.log(`Event Date: ${formatDate}`);
         }
-
     })
+
 }
 
 function movieThis() {
@@ -72,12 +76,38 @@ function movieThis() {
 
     console.log(movieSearch);
 
-    request(movieSearch, function(err, response, data) {
-        if(!err && response.statusCode == 200){
-        console.log("Title: " + JSON.parse(data)["Title"]);
+    request(movieSearch, function (err, response, data) {
+        if (!err && response.statusCode == 200) {
+            const rottenTomatoes = JSON.parse(data)['Ratings'];
+            console.log(`Title: ${JSON.parse(data)['Title']}`);
+            console.log(`Year: ${JSON.parse(data)['Year']}`);
+            console.log(`IMDB Rating: ${JSON.parse(data)['imdbRating']}`);
+            console.log(`Rotten Tomatoes Rating: ${rottenTomatoes[1].Value}`);
+            console.log(`Country: ${JSON.parse(data)['Country']}`);
+            console.log(`Language: ${JSON.parse(data)['Language']}`);
+            console.log(`Actors : ${JSON.parse(data)['Actors']}`);
         }
     })
 
 }
 
-mainSwitch()
+function doWhatItSays() {
+    fs.readFile("random.txt", "utf8", function (err, data) {
+        if (error) {
+            console.log(err);
+        } else {
+
+            //split data, declare variables
+            const dataArray = data.split(',');
+            userCommand = dataArray[0];
+            secondCommand = dataArray[1];
+            //if multi-word search term, add.
+            for (i = 2; i < dataArray.length; i++) {
+                secondCommand = secondCommand + "+" + dataArray[i];
+            }
+            mainSwitch();
+        }
+    })
+}
+
+            mainSwitch()
