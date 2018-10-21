@@ -25,37 +25,40 @@ inquirer.prompt([
     },
 
 ]).then(function (command) {
-    switch (command.firstCommand) {
 
-        case 'concert-this':
-            conertThis();
-            break;
+    let firstCommand = command.firstCommand;
+    let secondCommand = command.secondCommand;
 
-        case 'spotify-this-song':
-            spotifyFind();
-            break;
-
-        case 'movie-this':
-            movieThis();
-            break;
-
-        case 'do-what-it-says':
-            doWhatItSays();
-            break;
-
+    function mainSwitch() {
+        switch (firstCommand) {
+    
+            case 'concert-this':
+                conertThis();
+                break;
+    
+            case 'spotify-this-song':
+                spotifyFind();
+                break;
+    
+            case 'movie-this':
+                movieThis();
+                break;
+    
+            case 'do-what-it-says':
+                doWhatItSays();
+                break;
+    
+        }
     }
-
-
-
 
     function spotifyFind() {
         console.log(`Starting Spotify Search`);
 
-        if (command.secondCommand === undefined) {
-            command.secondCommand = "The Sign Ace of Base";
+        if (secondCommand === undefined) {
+            secondCommand = "The Sign Ace of Base";
         }
 
-        spotify.search({ type: 'track', query: `${command.secondCommand}` }, function (err, data) {
+        spotify.search({ type: 'track', query: `${secondCommand}` }, function (err, data) {
             if (err) {
                 return console.log('Error occurred: ' + err);
             }
@@ -70,7 +73,7 @@ inquirer.prompt([
 
     function conertThis() {
         console.log(`Starting Concert Search`);
-        const searchConcert = `https://rest.bandsintown.com/artists/${command.secondCommand}/events?app_id=codingbootcamp`
+        const searchConcert = `https://rest.bandsintown.com/artists/${secondCommand}/events?app_id=codingbootcamp`
 
         request(searchConcert, function (err, response, data) {
             if (!err && response.statusCode == 200) {
@@ -87,11 +90,11 @@ inquirer.prompt([
 
     function movieThis() {
         console.log(`Starting Movie Search`);
-        if (command.secondCommand === undefined) {
-            command.secondCommand = "Mr. Nobody";
+        if (secondCommand === undefined) {
+            secondCommand = "Mr. Nobody";
         }
 
-        var movieSearch = `http://www.omdbapi.com/?apikey=trilogy&t=${command.secondCommand}&r=json`;
+        var movieSearch = `http://www.omdbapi.com/?apikey=trilogy&t=${secondCommand}&r=json`;
 
         request(movieSearch, function (err, response, data) {
             if (!err && response.statusCode == 200) {
@@ -112,19 +115,24 @@ inquirer.prompt([
     function doWhatItSays() {
         console.log(`Starting Random Search`);
         fs.readFile("random.txt", "utf8", function (err, data) {
-            if (error) {
+            if (err) {
                 console.log(err);
             } else {
                 const dataArray = data.split(',');
                 firstCommand = dataArray[0];
-                command.secondCommand = dataArray[1];
+                secondCommand = dataArray[1];
 
                 for (i = 2; i < dataArray.length; i++) {
-                    command.secondCommand = command.secondCommand + "+" + dataArray[i];
+                    secondCommand = secondCommand + "+" + dataArray[i];
                 }
+
+                mainSwitch();
             }
         })
     }
 
+    mainSwitch();
+
 
 });
+
